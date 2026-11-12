@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function teacher() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    match /rankings/{id} {
+      allow get: if true;
+      allow list: if request.query.limit != null && request.query.limit <= 100;
+    }
+    match /publicStats/global { allow get: if true; }
+    match /adminStats/global { allow get: if teacher(); }
+    match /admins/{uid} { allow get: if request.auth != null && request.auth.uid == uid; }
+  }
+}
